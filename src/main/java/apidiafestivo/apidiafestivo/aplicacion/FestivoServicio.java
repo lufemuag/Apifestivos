@@ -7,6 +7,7 @@ import apidiafestivo.apidiafestivo.core.interfaces.repositorios.IFestivoReposito
 import apidiafestivo.apidiafestivo.core.interfaces.servicios.IFestivoServicio;
 import apidiafestivo.apidiafestivo.dominio.Festivo;
 
+
 @Service
 public class FestivoServicio implements IFestivoServicio {
 
@@ -17,9 +18,10 @@ public class FestivoServicio implements IFestivoServicio {
         this.repositorio = repositorio;
     }
 
+
     @Override
     public Date getDomingo(Integer año) {
-        // Método de Domingo de Ramos utilizando Date
+        // Lógica para calcular Domingo de Ramos
         int a = año % 19;
         int b = año % 4;
         int c = año % 7;
@@ -35,12 +37,19 @@ public class FestivoServicio implements IFestivoServicio {
         return java.sql.Date.valueOf(java.time.LocalDate.of(año, mes, dia));  // Cambié a Date
     }
 
+
+
+    @Override
+    public Date getDomingoRamos(Integer año) {
+        return getDomingo(año); 
+    }
+
     @Override
     public Date incrementarDias(Date fecha, Integer dias) {
         java.util.Calendar calendar = java.util.Calendar.getInstance();
         calendar.setTime(fecha);
         calendar.add(java.util.Calendar.DAY_OF_MONTH, dias);
-        return calendar.getTime();  // Cambié a Date
+        return calendar.getTime();  
     }
 
     @Override

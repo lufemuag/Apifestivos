@@ -7,5 +7,5 @@ import apidiafestivo.apidiafestivo.dominio.Festivo;
 
 @Repository
 public interface IFestivoRepositorio extends JpaRepository<Festivo, Integer> {
-    // Aquí puedes agregar consultas personalizadas si es necesario
+
 }
