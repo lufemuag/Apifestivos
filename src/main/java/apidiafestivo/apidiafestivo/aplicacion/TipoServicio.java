@@ -13,47 +13,48 @@ public class TipoServicio implements ITipoServicio {
 
     private ITipoRepositorio repositorio;
 
-    public TipoServicio(ITipoRepositorio repositorio){
+    public TipoServicio(ITipoRepositorio repositorio) {
         this.repositorio = repositorio;
     }
 
     @Override
     public List<Tipo> listar() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'listar'");
+        // Usamos el repositorio para obtener todos los tipos
+        return repositorio.findAll();
     }
 
     @Override
     public Tipo obtener(Integer id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'obtener'");
+        // Usamos el repositorio para buscar el tipo por id
+        return repositorio.findById(id).orElse(null);  // Devuelve null si no se encuentra
     }
 
     @Override
     public List<Tipo> buscar(String nombre) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'buscar'");
+        // Usamos el repositorio para buscar tipos por nombre (parcial)
+        return repositorio.findByNombreContaining(nombre);
     }
 
     @Override
     public Tipo agregar(Tipo tipo) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'agregar'");
+        // Usamos el repositorio para guardar el nuevo tipo
+        return repositorio.save(tipo);
     }
 
     @Override
     public Tipo modificar(Tipo tipo) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'modificar'");
+        // Usamos el repositorio para guardar o actualizar el tipo
+        return repositorio.save(tipo);
     }
 
     @Override
     public boolean eliminar(Integer id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'eliminar'");
+        // Usamos el repositorio para eliminar el tipo si existe
+        if (repositorio.existsById(id)) {
+            repositorio.deleteById(id);
+            return true;
+        }
+        return false;
     }
-
-    
 }
-
 

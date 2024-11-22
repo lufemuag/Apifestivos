@@ -2,6 +2,7 @@ package apidiafestivo.apidiafestivo.aplicacion.seguridad;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,17 +14,19 @@ import apidiafestivo.apidiafestivo.dominio.Usuario;
 
 public class UsuarioDetalles implements UserDetails {
 
-    private String nombreUsuario;
-    private String clave;
-    private List<GrantedAuthority> permisos;
+    private final String nombreUsuario;
+    private final String clave;
+    private final List<GrantedAuthority> permisos;
 
-    public UsuarioDetalles(Usuario usuario){
-        nombreUsuario = usuario.getUsuario();
-        clave = usuario.getClave();
-        permisos = usuario.getRoles() != null? Arrays.stream(usuario.getRoles().split(","))
-                                                            .map(SimpleGrantedAuthority::new)
-                                                            .collect(Collectors.toList())
-                                                            :null;
+    public UsuarioDetalles(Usuario usuario) {
+        this.nombreUsuario = usuario.getUsuario();
+        this.clave = usuario.getClave();
+        this.permisos = (usuario.getRoles() != null && !usuario.getRoles().isEmpty())
+                ? Arrays.stream(usuario.getRoles().split(","))
+                        .map(String::trim) // Eliminamos espacios en blanco adicionales.
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList())
+                : Collections.emptyList(); // Evitar que permisos sea `null`.
     }
 
     @Override
@@ -60,6 +63,5 @@ public class UsuarioDetalles implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
-
 }
+

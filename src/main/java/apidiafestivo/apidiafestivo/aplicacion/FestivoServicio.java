@@ -1,13 +1,8 @@
 package apidiafestivo.apidiafestivo.aplicacion;
 
-import java.time.DateTimeException;
-import java.time.LocalDate;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
 import org.springframework.stereotype.Service;
-
 import apidiafestivo.apidiafestivo.core.interfaces.repositorios.IFestivoRepositorio;
 import apidiafestivo.apidiafestivo.core.interfaces.servicios.IFestivoServicio;
 import apidiafestivo.apidiafestivo.dominio.Festivo;
@@ -15,114 +10,119 @@ import apidiafestivo.apidiafestivo.dominio.Festivo;
 @Service
 public class FestivoServicio implements IFestivoServicio {
 
-    private IFestivoRepositorio repositorio;
+    private static final int DIAS_EN_MES = 31;
+    private final IFestivoRepositorio repositorio;
 
-    public FestivoServicio(IFestivoRepositorio repositorio){
+    public FestivoServicio(IFestivoRepositorio repositorio) {
         this.repositorio = repositorio;
     }
 
     @Override
-    public Date getDomingoRamos(Integer año) {
+    public Date getDomingo(Integer año) {
+        // Método de Domingo de Ramos utilizando Date
         int a = año % 19;
         int b = año % 4;
         int c = año % 7;
         int d = (19 * a + 24) % 30;
-
         int dias = d + (2 * b + 4 * c + 6 * d + 5) % 7;
-
         int dia = 15 + dias;
-        int mes = 3;  
+        int mes = 3;
 
-        if (dia > 31){
-            dia -= 31;
+        if (dia > DIAS_EN_MES) {
+            dia -= DIAS_EN_MES;
             mes = 4;
         }
-        return new Date(año - 1900, mes -1, dia);
+        return java.sql.Date.valueOf(java.time.LocalDate.of(año, mes, dia));  // Cambié a Date
     }
 
     @Override
     public Date incrementarDias(Date fecha, Integer dias) {
-        
-        Calendar cld = Calendar.getInstance();
-        cld.setTime(fecha);
-        cld.add(Calendar.DATE, dias);
-        return cld.getTime();
+        java.util.Calendar calendar = java.util.Calendar.getInstance();
+        calendar.setTime(fecha);
+        calendar.add(java.util.Calendar.DAY_OF_MONTH, dias);
+        return calendar.getTime();  // Cambié a Date
     }
 
     @Override
     public Date siguienteLunes(Date fecha) {
-
-        Calendar cld = Calendar.getInstance();
-        cld.setTime(fecha);
-            
-        int diaSemana = cld.get(Calendar.DAY_OF_WEEK);
-        if (diaSemana != Calendar.MONDAY){
-            if (diaSemana > Calendar.MONDAY){
-                fecha = incrementarDias(fecha, 9 - diaSemana);
-            } else {
-                fecha = incrementarDias(fecha, 1);
-            }
+        java.util.Calendar calendar = java.util.Calendar.getInstance();
+        calendar.setTime(fecha);
+        int daysUntilNextMonday = java.util.Calendar.MONDAY - calendar.get(java.util.Calendar.DAY_OF_WEEK);
+        if (daysUntilNextMonday <= 0) {
+            daysUntilNextMonday += 7;  // Si ya es lunes, añade 7 días
         }
-        return fecha;       
+        calendar.add(java.util.Calendar.DAY_OF_MONTH, daysUntilNextMonday);
+        return calendar.getTime();  // Cambié a Date
     }
 
     @Override
     public String verificar(int año, int mes, int dia) {
         try {
-            LocalDate fecha = LocalDate.of(año, mes, dia);
-        } catch (DateTimeException e) {
+            java.util.Date fechas = java.sql.Date.valueOf(java.time.LocalDate.of(año, mes, dia)); 
+        } catch (Exception e) {
             return "Fecha No válida";
         }
 
         List<Festivo> listaFestivos = repositorio.findAll();
-        Date domingoRamos = getDomingoRamos(año);
+        Date domingoRamos = getDomingo(año);
         Date domingoPascua = incrementarDias(domingoRamos, 7);
 
-        for (Festivo festivo : listaFestivos){
-            if ((festivo.getTipo().getId() == 1 && new Date(año - 1900, festivo.getMes() - 1, festivo.getDia()).compareTo(new Date(año - 1900, mes - 1, dia)) == 0) || 
-            (festivo.getTipo().getId() == 2 && siguienteLunes(new Date(año - 1900, festivo.getMes() - 1, festivo.getDia())).compareTo(new Date(año - 1900, mes - 1, dia)) == 0) ||
-            (festivo.getTipo().getId() == 3 && incrementarDias(domingoPascua, festivo.getDiasPascua()).compareTo(new Date(año - 1900, mes - 1, dia)) == 0) ||
-            (festivo.getTipo().getId() == 4 && siguienteLunes(incrementarDias(domingoPascua, festivo.getDiasPascua())).compareTo(new Date(año - 1900, mes - 1, dia)) == 0)){
+        for (Festivo festivo : listaFestivos) {
+            Date fechaFestivo = java.sql.Date.valueOf(java.time.LocalDate.of(año, festivo.getMes(), festivo.getDia())); 
+            boolean esFestivo = false;
+
+            switch (festivo.getTipo().getId()) {
+                case 1:  // Tipo 1
+                    esFestivo = fechaFestivo.equals(java.sql.Date.valueOf(java.time.LocalDate.of(año, mes, dia)));
+                    break;
+                case 2:  // Tipo 2 (Lunes de Pascua)
+                    esFestivo = siguienteLunes(fechaFestivo).equals(java.sql.Date.valueOf(java.time.LocalDate.of(año, mes, dia)));  // Cambié a Date
+                    break;
+                case 3:  // Tipo 3
+                    esFestivo = incrementarDias(domingoPascua, festivo.getDiasPascua()).equals(java.sql.Date.valueOf(java.time.LocalDate.of(año, mes, dia)));  // Cambié a Date
+                    break;
+                case 4:  // Tipo 4
+                    esFestivo = siguienteLunes(incrementarDias(domingoPascua, festivo.getDiasPascua()))
+                            .equals(java.sql.Date.valueOf(java.time.LocalDate.of(año, mes, dia)));  // Cambié a Date
+                    break;
+            }
+
+            if (esFestivo) {
                 return "Es Festivo";
             }
         }
+
         return "No es Festivo";
     }
 
+    // Métodos no implementados, lanzan UnsupportedOperationException
     @Override
     public List<Festivo> listar() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'listar'");
+        throw new UnsupportedOperationException("Método 'listar' no implementado");
     }
 
     @Override
     public Festivo obtener(Integer id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'obtener'");
+        throw new UnsupportedOperationException("Método 'obtener' no implementado");
     }
 
     @Override
     public List<Festivo> buscar(String nombre) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'buscar'");
+        throw new UnsupportedOperationException("Método 'buscar' no implementado");
     }
 
     @Override
     public Festivo agregar(Festivo tipo) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'agregar'");
+        throw new UnsupportedOperationException("Método 'agregar' no implementado");
     }
 
     @Override
     public Festivo modificar(Festivo tipo) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'modificar'");
+        throw new UnsupportedOperationException("Método 'modificar' no implementado");
     }
 
     @Override
     public boolean eliminar(Integer id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'eliminar'");
+        throw new UnsupportedOperationException("Método 'eliminar' no implementado");
     }
-
 }
