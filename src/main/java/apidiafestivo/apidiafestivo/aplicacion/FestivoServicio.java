@@ -18,7 +18,7 @@ public class FestivoServicio implements IFestivoServicio {
         this.repositorio = repositorio;
     }
 
-
+    //jejeje
     @Override
     public Date getDomingo(Integer año) {
         // Lógica para calcular Domingo de Ramos
@@ -37,7 +37,7 @@ public class FestivoServicio implements IFestivoServicio {
         return java.sql.Date.valueOf(java.time.LocalDate.of(año, mes, dia));  // Cambié a Date
     }
 
-    //jeje
+    
 
     @Override
     public Date getDomingoRamos(Integer año) {
